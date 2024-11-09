@@ -12,3 +12,61 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id             Int              @id @default(autoincrement())
+  telegramId     String           @unique
+  name           String
+  timezone       Int
+  appointments   Appointment[]
+  SupportRequest SupportRequest[]
+}
+
+model Service {
+  id           Int           @id @default(autoincrement())
+  name         String
+  description  String?
+  duration     Int
+  price        Float
+  appointments Appointment[]
+}
+
+model Appointment {
+  id        Int               @id @default(autoincrement())
+  clientId  Int
+  client    User              @relation(fields: [clientId], references: [id])
+  serviceId Int
+  service   Service           @relation(fields: [serviceId], references: [id])
+  startTime DateTime
+  endTime   DateTime
+  status    AppointmentStatus
+}
+
+model SupportRequest {
+  id          Int           @id @default(autoincrement())
+  clientId    Int
+  client      User          @relation(fields: [clientId], references: [id])
+  createdAt   DateTime      @default(now())
+  description String
+  status      SupportStatus @default(PENDING)
+}
+
+model ServerSettings {
+  id            Int      @id @default(autoincrement())
+  adminTimezone String // Timezone for admin, e.g., "Europe/Moscow"
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+enum SupportStatus {
+  PENDING
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
