@@ -2,9 +2,11 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import * as Joi from 'joi';
 import { DatabaseModule } from './database/database.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
+    UsersModule,
     DatabaseModule,
     ConfigModule.forRoot({
       isGlobal: true,
@@ -14,6 +16,7 @@ import { DatabaseModule } from './database/database.module';
         ADMIN_CREDENTIALS: Joi.string().default('root:root'),
       }),
     }),
+    UsersModule,
   ],
   controllers: [],
   providers: [],
