@@ -7,6 +7,7 @@ import { ServicesModule } from './services/services.module';
 
 @Module({
   imports: [
+    ServicesModule,
     UsersModule,
     DatabaseModule,
     ConfigModule.forRoot({
