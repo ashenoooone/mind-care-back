@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, Service } from '@prisma/client';
+import { Service } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
 import { GetServicesDto, GetServicesReturnDto } from './dto/get-services.dto';
+import { CreateServiceDto } from './dto/create-service.dto';
 
 @Injectable()
 export class ServicesService {
   constructor(private db: DatabaseService) {}
 
-  create(createServiceDto: Prisma.ServiceCreateInput) {
+  create(createServiceDto: CreateServiceDto) {
     return this.db.service.create({ data: createServiceDto });
   }
 

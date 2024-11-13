@@ -9,15 +9,16 @@ import {
   Query,
 } from '@nestjs/common';
 import { ServicesService } from './services.service';
-import { Prisma, Service } from '@prisma/client';
+import { Service } from '@prisma/client';
 import { GetServicesDto } from './dto/get-services.dto';
+import { CreateServiceDto } from './dto/create-service.dto';
 
 @Controller('services')
 export class ServicesController {
   constructor(private readonly servicesService: ServicesService) {}
 
   @Post()
-  create(@Body() createServiceDto: Prisma.ServiceCreateInput) {
+  create(@Body() createServiceDto: CreateServiceDto) {
     return this.servicesService.create(createServiceDto);
   }
 
