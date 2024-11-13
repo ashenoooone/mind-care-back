@@ -8,7 +8,7 @@ import {
   Delete,
 } from '@nestjs/common';
 import { ServicesService } from './services.service';
-import { Prisma } from '@prisma/client';
+import { Prisma, Service } from '@prisma/client';
 
 @Controller('services')
 export class ServicesController {
@@ -30,10 +30,7 @@ export class ServicesController {
   }
 
   @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateServiceDto: Prisma.ServiceUpdateInput,
-  ) {
+  update(@Param('id') id: string, @Body() updateServiceDto: Service) {
     return this.servicesService.update(+id, updateServiceDto);
   }
 
