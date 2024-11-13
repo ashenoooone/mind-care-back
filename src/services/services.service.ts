@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { Service } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
 import { GetServicesDto, GetServicesReturnDto } from './dto/get-services.dto';
 import { CreateServiceDto } from './dto/create-service.dto';
+import { UpdateServiceDto } from './dto/update-service.dto';
 
 @Injectable()
 export class ServicesService {
@@ -44,10 +44,10 @@ export class ServicesService {
     });
   }
 
-  update(id: number, updateServiceDto: Service) {
+  update(id: number, updateServiceDto: UpdateServiceDto) {
     return this.db.service.update({
       where: {
-        id: updateServiceDto.id,
+        id: Number(id),
       },
       data: {
         ...updateServiceDto,

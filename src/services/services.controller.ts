@@ -9,9 +9,9 @@ import {
   Query,
 } from '@nestjs/common';
 import { ServicesService } from './services.service';
-import { Service } from '@prisma/client';
 import { GetServicesDto } from './dto/get-services.dto';
 import { CreateServiceDto } from './dto/create-service.dto';
+import { UpdateServiceDto } from './dto/update-service.dto';
 
 @Controller('services')
 export class ServicesController {
@@ -33,7 +33,7 @@ export class ServicesController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateServiceDto: Service) {
+  update(@Param('id') id: string, @Body() updateServiceDto: UpdateServiceDto) {
     return this.servicesService.update(+id, updateServiceDto);
   }
 
