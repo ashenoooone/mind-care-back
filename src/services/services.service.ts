@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, Service } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
-import { GetServicesDto } from './dto/get-services.dto';
+import { GetServicesDto, GetServicesReturnDto } from './dto/get-services.dto';
 
 @Injectable()
 export class ServicesService {
@@ -11,11 +11,28 @@ export class ServicesService {
     return this.db.service.create({ data: createServiceDto });
   }
 
-  findAll(params: GetServicesDto) {
-    return this.db.service.findMany({
+  async findAll(params: GetServicesDto): Promise<GetServicesReturnDto> {
+    const currentPage = Number(params.page);
+    const totalItems = await this.db.service.count();
+    const prevPage = currentPage > 0 ? currentPage - 1 : 0;
+    const items = await this.db.service.findMany({
       take: Number(params.limit),
       skip: params.limit * params.page,
     });
+    const totalPages = Math.floor(totalItems / params.limit);
+
+    const nextPage = currentPage < totalPages ? currentPage + 1 : currentPage;
+
+    return {
+      meta: {
+        currentPage,
+        nextPage,
+        totalItems,
+        prevPage,
+        totalPages,
+      },
+      items,
+    };
   }
 
   findOne(id: number) {

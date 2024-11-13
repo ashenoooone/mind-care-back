@@ -1,5 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Service } from '@prisma/client';
 import { IsNumber, IsOptional, Min } from 'class-validator';
+import { PaginationMeta } from 'src/common/types';
 
 export class GetServicesDto {
   @ApiPropertyOptional({
@@ -19,4 +21,11 @@ export class GetServicesDto {
   @IsNumber()
   @Min(1)
   limit?: number = 10;
+}
+
+export class GetServicesReturnDto {
+  @ApiPropertyOptional()
+  items: Service[];
+  @ApiPropertyOptional()
+  meta: PaginationMeta;
 }
