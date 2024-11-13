@@ -6,9 +6,11 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { ServicesService } from './services.service';
 import { Prisma, Service } from '@prisma/client';
+import { GetServicesDto } from './dto/get-services.dto';
 
 @Controller('services')
 export class ServicesController {
@@ -20,8 +22,8 @@ export class ServicesController {
   }
 
   @Get()
-  findAll() {
-    return this.servicesService.findAll();
+  findAll(@Query() query: GetServicesDto) {
+    return this.servicesService.findAll(query);
   }
 
   @Get(':id')

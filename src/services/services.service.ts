@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, Service } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
+import { GetServicesDto } from './dto/get-services.dto';
 
 @Injectable()
 export class ServicesService {
@@ -10,8 +11,11 @@ export class ServicesService {
     return this.db.service.create({ data: createServiceDto });
   }
 
-  findAll() {
-    return this.db.service.findMany();
+  findAll(params: GetServicesDto) {
+    return this.db.service.findMany({
+      take: Number(params.limit),
+      skip: params.limit * params.page,
+    });
   }
 
   findOne(id: number) {
