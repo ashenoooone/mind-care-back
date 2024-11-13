@@ -16,9 +16,10 @@ datasource db {
 
 model User {
   id             Int              @id @default(autoincrement())
-  telegramId     String           @unique
+  telegramId     Int              @unique
   name           String
   timezone       Int
+  phoneNumber    String?          @unique
   appointments   Appointment[]
   SupportRequest SupportRequest[]
 }

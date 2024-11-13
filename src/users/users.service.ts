@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, User } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user-dto';
 
 @Injectable()
 export class UsersService {
   constructor(private db: DatabaseService) {}
 
-  create(createUserDto: Prisma.UserCreateInput) {
+  create(createUserDto: CreateUserDto) {
     return this.db.user.create({ data: createUserDto });
   }
 
@@ -18,7 +19,7 @@ export class UsersService {
     return this.db.user.findUnique({ where: { id } });
   }
 
-  update(id: number, updateUserDto: User) {
+  update(id: number, updateUserDto: UpdateUserDto) {
     return this.db.user.update({ where: { id }, data: updateUserDto });
   }
 
