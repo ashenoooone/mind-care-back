@@ -1,4 +1,4 @@
-import { AppointmentStatus, PrismaClient } from '@prisma/client';
+import { AppointmentStatus, Prisma, PrismaClient } from '@prisma/client';
 import { addDays, addHours } from 'date-fns';
 
 export async function createAppointments(prisma: PrismaClient) {
@@ -15,7 +15,7 @@ export async function createAppointments(prisma: PrismaClient) {
       return;
     }
 
-    const appointments = [];
+    const appointments: Prisma.AppointmentCreateManyInput[] = [];
     for (let i = 0; i < 10; i++) {
       const randomUser = users[Math.floor(Math.random() * users.length)];
       const randomService =
@@ -32,5 +32,8 @@ export async function createAppointments(prisma: PrismaClient) {
         status: AppointmentStatus.SCHEDULED,
       });
     }
+    await prisma.appointment.createMany({
+      data: appointments,
+    });
   }
 }
