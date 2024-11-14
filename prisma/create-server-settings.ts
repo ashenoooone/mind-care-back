@@ -6,7 +6,7 @@ export async function createServerSettings(prisma: PrismaClient) {
   if (!existingSettings)
     await prisma.serverSettings.create({
       data: {
-        adminTimezone: 'Europe/Moscow',
+        adminTimezone: 0,
         adminToken: randomUUID(),
       },
     });
