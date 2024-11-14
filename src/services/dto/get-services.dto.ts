@@ -1,27 +1,11 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Service } from '@prisma/client';
-import { IsNumber, IsOptional, Min } from 'class-validator';
-import { PaginationMeta } from 'src/common/types';
+import {
+  PaginationMeta,
+  PaginationParams,
+} from 'src/common/classes/pagination';
 
-export class GetServicesDto {
-  @ApiPropertyOptional({
-    minimum: 0,
-    default: 0,
-  })
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  page?: number = 0;
-
-  @ApiPropertyOptional({
-    minimum: 1,
-    default: 10,
-  })
-  @IsOptional()
-  @IsNumber()
-  @Min(1)
-  limit?: number = 10;
-}
+export class GetServicesDto extends PaginationParams {}
 
 export class GetServicesReturnDto {
   @ApiPropertyOptional()

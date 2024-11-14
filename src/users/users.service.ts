@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user-dto';
+import { GetUsersDto } from './dto/get-users.dto';
 
 @Injectable()
 export class UsersService {
@@ -11,8 +12,28 @@ export class UsersService {
     return this.db.user.create({ data: createUserDto });
   }
 
-  findAll() {
-    return this.db.user.findMany();
+  async findAll(params: GetUsersDto) {
+    const currentPage = Number(params.page);
+    const totalItems = await this.db.user.count();
+    const prevPage = currentPage > 0 ? currentPage - 1 : 0;
+    const items = await this.db.user.findMany({
+      take: Number(params.limit),
+      skip: params.limit * params.page,
+    });
+    const totalPages = Math.floor(totalItems / params.limit);
+
+    const nextPage = currentPage < totalPages ? currentPage + 1 : currentPage;
+
+    return {
+      meta: {
+        currentPage,
+        nextPage,
+        totalItems,
+        prevPage,
+        totalPages,
+      },
+      items,
+    };
   }
 
   findOne(id: number) {
