@@ -4,6 +4,7 @@ import * as Joi from 'joi';
 import { DatabaseModule } from './database/database.module';
 import { UsersModule } from './users/users.module';
 import { ServicesModule } from './services/services.module';
+import { OwnerModule } from './owner/owner.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ServicesModule } from './services/services.module';
     }),
     UsersModule,
     ServicesModule,
+    OwnerModule,
   ],
   controllers: [],
   providers: [],

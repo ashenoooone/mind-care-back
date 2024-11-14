@@ -58,6 +58,7 @@ model ServerSettings {
   adminTimezone String // Timezone for admin, e.g., "Europe/Moscow"
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  adminToken    String
 }
 
 enum SupportStatus {
