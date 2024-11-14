@@ -2,10 +2,12 @@ import { PrismaClient } from '@prisma/client';
 import { randomUUID } from 'crypto';
 
 export async function createServerSettings(prisma: PrismaClient) {
-  await prisma.serverSettings.create({
-    data: {
-      adminTimezone: 'Europe/Moscow',
-      adminToken: randomUUID(),
-    },
-  });
+  const existingSettings = await prisma.serverSettings.findFirst();
+  if (!existingSettings)
+    await prisma.serverSettings.create({
+      data: {
+        adminTimezone: 'Europe/Moscow',
+        adminToken: randomUUID(),
+      },
+    });
 }
