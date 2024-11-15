@@ -32,6 +32,9 @@ export class ReportsService {
     const items = await this.db.supportRequest.findMany({
       take: Number(params.limit),
       skip: Number(params.limit) * currentPage,
+      include: {
+        client: true,
+      },
     });
 
     const totalPages = Math.floor(totalItems / params.limit);
