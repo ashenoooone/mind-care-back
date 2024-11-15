@@ -5,6 +5,7 @@ import { DatabaseModule } from './database/database.module';
 import { UsersModule } from './users/users.module';
 import { ServicesModule } from './services/services.module';
 import { OwnerModule } from './owner/owner.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { OwnerModule } from './owner/owner.module';
     UsersModule,
     ServicesModule,
     OwnerModule,
+    ReportsModule,
   ],
   controllers: [],
   providers: [],

@@ -16,10 +16,12 @@ export class UsersService {
     const currentPage = Number(params.page);
     const totalItems = await this.db.user.count();
     const prevPage = currentPage > 0 ? currentPage - 1 : 0;
+
     const items = await this.db.user.findMany({
       take: Number(params.limit),
-      skip: params.limit * params.page,
+      skip: Number(params.limit) * currentPage,
     });
+
     const totalPages = Math.floor(totalItems / params.limit);
 
     const nextPage = currentPage < totalPages ? currentPage + 1 : currentPage;
