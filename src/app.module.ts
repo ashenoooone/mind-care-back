@@ -6,6 +6,8 @@ import { UsersModule } from './users/users.module';
 import { ServicesModule } from './services/services.module';
 import { OwnerModule } from './owner/owner.module';
 import { ReportsModule } from './reports/reports.module';
+import { WorkingSheduleModule } from './working-shedule/working-shedule.module';
+import { DayScheduleModule } from './day-schedule/day-schedule.module';
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { ReportsModule } from './reports/reports.module';
     ServicesModule,
     OwnerModule,
     ReportsModule,
+    WorkingSheduleModule,
+    DayScheduleModule,
   ],
   controllers: [],
   providers: [],
