@@ -38,8 +38,15 @@ export class UsersService {
     };
   }
 
-  findOne(id: number) {
-    return this.db.user.findUnique({ where: { id } });
+  async findOne(id: number) {
+    const userByIdFromDb = await this.db.user.findUnique({ where: { id } });
+    if (userByIdFromDb) return userByIdFromDb;
+    const userByIdFromTg = await this.db.user.findUnique({
+      where: {
+        telegramId: id,
+      },
+    });
+    return userByIdFromTg;
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {

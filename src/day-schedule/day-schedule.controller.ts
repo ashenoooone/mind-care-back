@@ -1,7 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { DayScheduleService } from './day-schedule.service';
 import { CreateDayScheduleDto } from './dto/create-day-schedule.dto';
 import { UpdateDayScheduleDto } from './dto/update-day-schedule.dto';
+import { GetAvailableDays } from './dto/get-available-days.dto';
 
 @Controller('day-schedule')
 export class DayScheduleController {
@@ -17,18 +27,21 @@ export class DayScheduleController {
     return this.dayScheduleService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.dayScheduleService.findOne(+id);
-  }
-
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateDayScheduleDto: UpdateDayScheduleDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateDayScheduleDto: UpdateDayScheduleDto,
+  ) {
     return this.dayScheduleService.update(+id, updateDayScheduleDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.dayScheduleService.remove(+id);
+  }
+
+  @Get('days')
+  getAvailableDays(@Query() params: GetAvailableDays) {
+    return this.dayScheduleService.getAvailableDays(params);
   }
 }
