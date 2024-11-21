@@ -54,6 +54,13 @@ model SupportRequest {
   status      SupportStatus @default(PENDING)
 }
 
+model DaySchedule {
+  id        Int      @id @default(autoincrement())
+  date      DateTime
+  startHour Int
+  endHour   Int
+}
+
 model WorkingSchedule {
   id        Int     @id @default(autoincrement())
   dayOfWeek Int // 0 - Понедельник, 1 - Вторник, ..., 6 - Воскресенье
