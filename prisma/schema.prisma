@@ -54,6 +54,20 @@ model SupportRequest {
   status      SupportStatus @default(PENDING)
 }
 
+model WorkingSchedule {
+  id        Int     @id @default(autoincrement())
+  dayOfWeek Int // 0 - Понедельник, 1 - Вторник, ..., 6 - Воскресенье
+  isWorking Boolean // true, если рабочий день
+  startHour Int // Час начала работы (например, 9)
+  endHour   Int // Час окончания работы (например, 18)
+}
+
+model NonWorkingDay {
+  id     Int      @id @default(autoincrement())
+  date   DateTime // Дата нерабочего дня
+  reason String // Причина (например, отпуск, праздники)
+}
+
 model ServerSettings {
   id            Int      @id @default(autoincrement())
   adminTimezone Int // from msk

@@ -4,6 +4,7 @@ import { createServerSettings } from './create-server-settings';
 import { createUsers } from './create-users';
 import { createSupportRequests } from './create-support-request';
 import { createAppointments } from './create-appointments';
+import { createWorkingSchedule } from './create-working-schedule';
 
 const prisma = new PrismaClient();
 
@@ -13,6 +14,7 @@ async function main() {
   await createUsers(prisma);
   await createSupportRequests(prisma);
   await createAppointments(prisma);
+  await createWorkingSchedule(prisma);
 }
 
 main()
