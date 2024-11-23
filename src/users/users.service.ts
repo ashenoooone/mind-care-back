@@ -3,6 +3,7 @@ import { DatabaseService } from 'src/database/database.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user-dto';
 import { GetUsersDto } from './dto/get-users.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
@@ -14,14 +15,23 @@ export class UsersService {
 
   async findAll(params: GetUsersDto) {
     const currentPage = Number(params.page);
-    const totalItems = await this.db.user.count();
     const prevPage = currentPage > 0 ? currentPage - 1 : 0;
+    const filters: Prisma.UserWhereInput = {};
+
+    if (params.name) {
+      filters.OR = [
+        { name: { contains: params.name } },
+        { tgNickname: { contains: params.name } },
+      ];
+    }
 
     const items = await this.db.user.findMany({
       take: Number(params.limit),
       skip: Number(params.limit) * currentPage,
+      where: filters,
     });
 
+    const totalItems = await this.db.user.count({ where: filters });
     const totalPages = Math.floor(totalItems / params.limit);
 
     const nextPage = currentPage < totalPages ? currentPage + 1 : currentPage;
