@@ -8,6 +8,7 @@ import { OwnerModule } from './owner/owner.module';
 import { ReportsModule } from './reports/reports.module';
 import { WorkingSheduleModule } from './working-shedule/working-shedule.module';
 import { DayScheduleModule } from './day-schedule/day-schedule.module';
+import { AppointmentsModule } from './appointments/appointments.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { DayScheduleModule } from './day-schedule/day-schedule.module';
     ReportsModule,
     WorkingSheduleModule,
     DayScheduleModule,
+    AppointmentsModule,
   ],
   controllers: [],
   providers: [],
