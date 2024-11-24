@@ -21,6 +21,8 @@ export class UsersService {
     if (params.name) {
       filters.OR = [
         { name: { contains: params.name } },
+        { name: { equals: params.name } },
+        { tgNickname: { equals: params.name } },
         { tgNickname: { contains: params.name } },
       ];
     }
