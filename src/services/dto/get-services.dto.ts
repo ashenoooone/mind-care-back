@@ -5,7 +5,10 @@ import {
   PaginationParams,
 } from 'src/common/classes/pagination';
 
-export class GetServicesDto extends PaginationParams {}
+export class GetServicesDto extends PaginationParams {
+  @ApiPropertyOptional()
+  name?: string;
+}
 
 export class GetServicesReturnDto {
   @ApiPropertyOptional()
