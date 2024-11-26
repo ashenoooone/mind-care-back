@@ -107,7 +107,7 @@ export class AppointmentsService {
       prevPage,
     };
 
-    return { meta, data: appointments };
+    return { meta, items: appointments };
   }
 
   async findOne(id: number) {
