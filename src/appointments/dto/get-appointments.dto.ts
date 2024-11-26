@@ -1,4 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import { IsOptional, IsNumber, IsEnum, IsDateString } from 'class-validator';
 import { PaginationParams } from 'src/common/classes/pagination';
 
@@ -22,11 +23,13 @@ export class GetAppointmentsDto extends PaginationParams {
   })
   @IsOptional()
   @IsNumber()
+  @Transform(({ value }) => parseInt(value, 10))
   clientId?: number;
 
   @ApiPropertyOptional({
     description: 'ID услуги для фильтрации записей',
   })
+  @Transform(({ value }) => parseInt(value, 10))
   @IsOptional()
   @IsNumber()
   serviceId?: number;

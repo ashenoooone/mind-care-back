@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import { IsOptional, IsNumber, Min } from 'class-validator';
 
 export class PaginationMeta {
@@ -24,6 +25,7 @@ export class PaginationParams {
     default: 0,
   })
   @IsOptional()
+  @Transform(({ value }) => parseInt(value, 10))
   @IsNumber()
   @Min(0)
   page?: number = 0;
@@ -33,6 +35,7 @@ export class PaginationParams {
     default: 10,
   })
   @IsOptional()
+  @Transform(({ value }) => parseInt(value, 10))
   @IsNumber()
   @Min(1)
   limit?: number = 10;
