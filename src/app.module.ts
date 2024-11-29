@@ -9,6 +9,7 @@ import { ReportsModule } from './reports/reports.module';
 import { WorkingSheduleModule } from './working-shedule/working-shedule.module';
 import { DayScheduleModule } from './day-schedule/day-schedule.module';
 import { AppointmentsModule } from './appointments/appointments.module';
+import { MetricsModule } from './metrics/metrics.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { AppointmentsModule } from './appointments/appointments.module';
     WorkingSheduleModule,
     DayScheduleModule,
     AppointmentsModule,
+    MetricsModule,
   ],
   controllers: [],
   providers: [],

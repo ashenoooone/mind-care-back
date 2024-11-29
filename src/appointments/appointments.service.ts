@@ -82,9 +82,7 @@ export class AppointmentsService {
 
     const appointments = await this.prisma.appointment.findMany({
       where: filters,
-      orderBy: {
-        startTime: sortDirection,
-      },
+      orderBy: [{ startTime: sortDirection }, { id: 'asc' }],
       skip,
       take: parsedLimit,
       include: {
