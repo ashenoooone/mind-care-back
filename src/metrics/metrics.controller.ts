@@ -22,7 +22,6 @@ export class MetricsController {
       averageAppointmentCost,
       appointmentsByWeekday,
       topCancelingClients,
-      totalSupportedClients,
       averageDailyLoad,
     ] = await Promise.all([
       this.metricsService.getAverageDuration(params),
@@ -32,7 +31,6 @@ export class MetricsController {
       this.metricsService.getAverageAppointmentCost(params),
       this.metricsService.getAppointmentsByWeekday(params),
       this.metricsService.getTopCancelingClients(params),
-      this.metricsService.getTotalSupportedClients(params),
       this.metricsService.getAverageDailyLoad(params),
     ]);
 
@@ -44,7 +42,6 @@ export class MetricsController {
       averageAppointmentCost,
       appointmentsByWeekday,
       topCancelingClients,
-      totalSupportedClients,
       averageDailyLoad,
     };
   }

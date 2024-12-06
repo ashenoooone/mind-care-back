@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { GetAppointmentsMetricDto } from './dto/get-appointments-metric.dto';
-import { AppointmentStatus, Prisma } from '@prisma/client';
+import { AppointmentStatus, Prisma, Service } from '@prisma/client';
 import {
   endOfWeek,
   formatISO,
@@ -110,8 +110,9 @@ export class MetricsService {
   // 3. Самая популярная услуга
   async getMostPopularService(
     params: GetAppointmentsMetricDto,
-  ): Promise<{ serviceId: number; count: number } | null> {
+  ): Promise<{ service: Service; count: number } | null> {
     const appointments = await this.getFilteredAppointments(params);
+
     const serviceCounts = appointments.reduce<Record<number, number>>(
       (acc, a) => {
         acc[a.serviceId] = (acc[a.serviceId] || 0) + 1;
@@ -119,13 +120,28 @@ export class MetricsService {
       },
       {},
     );
+
     const mostPopular = Object.entries(serviceCounts).sort(
-      (a, b) => b[1] - a[1], // Сортировка по количеству
+      (a, b) => b[1] - a[1],
     )[0];
 
-    return mostPopular
-      ? { serviceId: +mostPopular[0], count: +mostPopular[1] }
-      : null;
+    if (!mostPopular) {
+      return null;
+    }
+
+    const [serviceId, count] = mostPopular;
+
+    const service = await this.getServiceById(+serviceId);
+
+    if (!service) {
+      return null;
+    }
+
+    return { service, count: +count };
+  }
+
+  private async getServiceById(serviceId: number): Promise<Service | null> {
+    return await this.db.service.findUnique({ where: { id: serviceId } });
   }
 
   // 4. Самое загруженное время
@@ -173,7 +189,7 @@ export class MetricsService {
   ): Promise<Record<string, number>> {
     const appointments = await this.getFilteredAppointments(params);
     const weekdayCounts = appointments.reduce((acc, a) => {
-      const weekday = new Date(a.startTime).toLocaleDateString('en-US', {
+      const weekday = new Date(a.startTime).toLocaleDateString('ru-RU', {
         weekday: 'long',
       });
       acc[weekday] = (acc[weekday] || 0) + 1;
@@ -183,9 +199,7 @@ export class MetricsService {
   }
 
   // 11. Процент отмен по клиентам
-  async getTopCancelingClients(
-    params: GetAppointmentsMetricDto,
-  ): Promise<{ clientId: number; cancelledCount: number }[]> {
+  async getTopCancelingClients(params: GetAppointmentsMetricDto) {
     const appointments = await this.getFilteredAppointments(
       params,
       AppointmentStatus.CANCELLED,
@@ -199,42 +213,27 @@ export class MetricsService {
       {},
     );
 
-    return Object.entries(clientCancelCounts)
-      .map(([clientId, count]) => ({
-        clientId: +clientId,
-        cancelledCount: count,
-      }))
-      .sort((a, b) => b.cancelledCount - a.cancelledCount);
-  }
-
-  // 12. Общее количество поддерживаемых клиентов
-  async getTotalSupportedClients(
-    params: GetAppointmentsMetricDto,
-  ): Promise<number> {
-    const clientsWithAppointments = await this.db.user.count({
-      where: {
-        appointments: {
-          some: {
-            ...this.buildDateFilters(params),
-          },
-        },
-      },
-    });
-
-    const clientsWithSupportRequests = await this.db.user.count({
-      where: {
-        SupportRequest: {
-          some: {
-            createdAt: {
-              gte: params.dateFrom,
-              lte: params.dateTo,
+    const data = await Promise.all(
+      Object.entries(clientCancelCounts)
+        .map(([clientId, count]) => ({
+          clientId: +clientId,
+          cancelledCount: count,
+        }))
+        .sort((a, b) => b.cancelledCount - a.cancelledCount)
+        .map(async ({ cancelledCount, clientId }) => {
+          const client = await this.db.user.findUnique({
+            where: {
+              id: clientId,
             },
-          },
-        },
-      },
-    });
+          });
+          return {
+            ...client,
+            cancelledCount,
+          };
+        }),
+    );
 
-    return clientsWithAppointments + clientsWithSupportRequests;
+    return data;
   }
 
   // 15. Средняя загрузка за рабочий день
@@ -275,6 +274,7 @@ export class MetricsService {
       },
       include: {
         service: true,
+        client: true,
       },
     });
   }
@@ -431,27 +431,28 @@ export class MetricsService {
   }
 
   // 8. Отмены по клиентам
-  async getTopCancellingClients(
-    params: GetAppointmentsMetricDto,
-  ): Promise<{ clientId: number; cancelledCount: number }[]> {
+  async getTopCancellingClients(params: GetAppointmentsMetricDto) {
     const appointments = await this.db.appointment.findMany({
       where: {
         ...this.buildDateFilters(params),
         status: AppointmentStatus.CANCELLED,
       },
+      include: {
+        client: true,
+      },
     });
 
     const cancellationsByClient = appointments.reduce<Record<number, number>>(
       (acc, a) => {
-        acc[a.clientId] = (acc[a.clientId] || 0) + 1;
+        acc[a.client.name] = (acc[a.client.name] || 0) + 1;
         return acc;
       },
       {},
     );
 
     return Object.entries(cancellationsByClient)
-      .map(([clientId, count]) => ({
-        clientId: +clientId,
+      .map(([client, count]) => ({
+        client,
         cancelledCount: count,
       }))
       .sort((a, b) => b.cancelledCount - a.cancelledCount)
