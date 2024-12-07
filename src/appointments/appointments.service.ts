@@ -1,28 +1,97 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { DatabaseService } from 'src/database/database.service';
 import { GetAppointmentsDto, SortDirection } from './dto/get-appointments.dto';
 import { PaginationMeta } from 'src/common/classes/pagination';
-import { Prisma } from '@prisma/client';
+import { AppointmentStatus, Prisma } from '@prisma/client';
+import { addHours, addMinutes, endOfDay, isAfter, startOfDay } from 'date-fns';
+import { DayScheduleService } from 'src/day-schedule/day-schedule.service';
+import { NotWorkingDaysService } from 'src/not-working-days/not-working-days.service';
+import { getDay } from 'src/common/lib/get-day';
 
 @Injectable()
 export class AppointmentsService {
-  constructor(private readonly prisma: DatabaseService) {}
+  constructor(
+    private readonly prisma: DatabaseService,
+    private readonly dayScheduleService: DayScheduleService,
+    private readonly nonWorkingService: NotWorkingDaysService,
+  ) {}
 
   async create(createAppointmentDto: CreateAppointmentDto) {
-    const { clientId, serviceId, startTime, endTime, status } =
-      createAppointmentDto;
+    const { clientId, serviceId, date } = createAppointmentDto;
 
-    const appointment = await this.prisma.appointment.create({
-      data: {
-        clientId,
-        serviceId,
-        startTime: new Date(startTime),
-        endTime: new Date(endTime),
-        status,
+    const lastAppointmentInDay = await this.prisma.appointment.findMany({
+      where: {
+        startTime: {
+          gte: startOfDay(date),
+          lt: endOfDay(date),
+        },
+        status: {
+          not: AppointmentStatus.CANCELLED,
+        },
+      },
+      orderBy: {
+        endTime: 'desc',
       },
     });
+
+    const service = await this.prisma.service.findUnique({
+      where: {
+        id: serviceId,
+      },
+    });
+
+    if (!service) {
+      throw new NotFoundException('no such service');
+    }
+
+    let appointment;
+    console.log(getDay(date));
+    const daySchedule = await this.dayScheduleService.getDayIfWorkDay(
+      getDay(date),
+    );
+
+    if (!daySchedule) throw new BadRequestException('no such day');
+
+    const nonWorkingDay = await this.nonWorkingService.findByDate(date);
+    if (nonWorkingDay) throw new BadRequestException('non working day');
+
+    if (!lastAppointmentInDay.length) {
+      const startTime = addHours(startOfDay(date), daySchedule.startHour);
+      const endTime = addMinutes(startTime, service.duration);
+      if (isAfter(endTime, addHours(date, daySchedule.endHour))) {
+        throw new BadRequestException('end of day');
+      }
+      appointment = await this.prisma.appointment.create({
+        data: {
+          status: AppointmentStatus.SCHEDULED,
+          clientId,
+          serviceId,
+          startTime,
+          endTime,
+        },
+      });
+    } else {
+      const startTime = addMinutes(lastAppointmentInDay[0].endTime, 10);
+      const endTime = addMinutes(startTime, service.duration);
+      if (isAfter(endTime, addHours(date, daySchedule.endHour))) {
+        throw new BadRequestException('end of day');
+      }
+      appointment = await this.prisma.appointment.create({
+        data: {
+          status: AppointmentStatus.SCHEDULED,
+          clientId,
+          serviceId,
+          startTime,
+          endTime,
+        },
+      });
+    }
 
     return appointment;
   }

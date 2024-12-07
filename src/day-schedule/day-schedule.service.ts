@@ -15,6 +15,14 @@ import {
 export class DayScheduleService {
   constructor(private readonly db: DatabaseService) {}
 
+  async getDayIfWorkDay(day: number) {
+    return this.db.workingSchedule.findFirst({
+      where: {
+        dayOfWeek: day,
+      },
+    });
+  }
+
   async create(createDayScheduleDto: CreateDayScheduleDto) {
     const { date, startHour, endHour } = createDayScheduleDto;
 

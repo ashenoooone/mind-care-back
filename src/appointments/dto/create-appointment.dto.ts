@@ -1,16 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { AppointmentStatus } from '@prisma/client';
-import { IsInt, IsDate, IsEnum } from 'class-validator';
+import { IsDate, IsInt } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateAppointmentDto {
-  @ApiProperty({
-    example: 1,
-  })
-  @IsInt()
-  @Type(() => Number)
-  id: number;
-
   @ApiProperty({
     example: 101,
   })
@@ -25,24 +17,8 @@ export class CreateAppointmentDto {
   @Type(() => Number)
   serviceId: number;
 
-  @ApiProperty({
-    example: '2024-11-23T09:00:00.000Z',
-  })
+  @ApiProperty()
   @IsDate()
   @Type(() => Date)
-  startTime: Date;
-
-  @ApiProperty({
-    example: '2024-11-23T10:00:00.000Z',
-  })
-  @IsDate()
-  @Type(() => Date)
-  endTime: Date;
-
-  @ApiProperty({
-    enum: AppointmentStatus,
-    example: 'SCHEDULED',
-  })
-  @IsEnum(AppointmentStatus)
-  status: AppointmentStatus;
+  date: Date;
 }

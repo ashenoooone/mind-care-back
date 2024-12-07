@@ -7,5 +7,6 @@ import { DatabaseModule } from 'src/database/database.module';
   controllers: [DayScheduleController],
   providers: [DayScheduleService],
   imports: [DatabaseModule],
+  exports: [DayScheduleService],
 })
 export class DayScheduleModule {}

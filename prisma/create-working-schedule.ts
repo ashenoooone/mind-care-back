@@ -40,11 +40,6 @@ export async function createWorkingSchedule(prisma: PrismaClient) {
     },
   ];
 
-  const exist = await prisma.workingSchedule.findFirst();
-  if (exist) {
-    return;
-  }
-
   await prisma.workingSchedule.createMany({
     data: items,
   });
