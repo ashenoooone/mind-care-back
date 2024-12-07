@@ -8,7 +8,17 @@ import { createWorkingSchedule } from './create-working-schedule';
 
 const prisma = new PrismaClient();
 
+async function clearDatabase() {
+  await prisma.workingSchedule.deleteMany();
+  await prisma.appointment.deleteMany();
+  await prisma.supportRequest.deleteMany();
+  await prisma.user.deleteMany();
+  await prisma.serverSettings.deleteMany();
+  await prisma.service.deleteMany();
+}
+
 async function main() {
+  await clearDatabase();
   await createServices(prisma);
   await createServerSettings(prisma);
   await createUsers(prisma);

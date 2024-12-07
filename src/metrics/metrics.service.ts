@@ -3,7 +3,6 @@ import { DatabaseService } from 'src/database/database.service';
 import { GetAppointmentsMetricDto } from './dto/get-appointments-metric.dto';
 import { AppointmentStatus, Prisma, Service } from '@prisma/client';
 import {
-  endOfWeek,
   formatISO,
   isAfter,
   parseISO,
@@ -459,101 +458,6 @@ export class MetricsService {
       .slice(0, 10);
   }
 
-  // 7. Средняя стоимость записи
-  async getAverageCostByTime(
-    params: GetAppointmentsMetricDto,
-    interval: 'day' | 'week' = 'week',
-  ): Promise<{ period: string; averageCost: number }[]> {
-    const appointments = await this.db.appointment.findMany({
-      where: {
-        ...this.buildDateFilters(params),
-        status: AppointmentStatus.COMPLETED,
-      },
-      include: {
-        service: true,
-      },
-    });
-
-    const costsByPeriod = appointments.reduce<
-      Record<string, { totalCost: number; count: number }>
-    >((acc, a) => {
-      let period: string;
-
-      if (interval === 'day') {
-        // Форматируем дату как начало дня
-        period = formatISO(startOfDay(new Date(a.startTime)), {
-          representation: 'date',
-        });
-      } else {
-        // Форматируем дату как "начало недели - конец недели"
-        const weekStart = startOfWeek(new Date(a.startTime));
-        const weekEnd = endOfWeek(new Date(a.startTime));
-        period = `${formatISO(weekStart, { representation: 'date' })} - ${formatISO(weekEnd, { representation: 'date' })}`;
-      }
-
-      if (!acc[period]) acc[period] = { totalCost: 0, count: 0 };
-      acc[period].totalCost += a.service.price;
-      acc[period].count++;
-      return acc;
-    }, {});
-
-    return Object.entries(costsByPeriod).map(
-      ([period, { totalCost, count }]) => ({
-        period,
-        averageCost: count > 0 ? totalCost / count : 0,
-      }),
-    );
-  }
-
-  // 6. Загруженность по дням недели
-  async getLoadByWeekday(
-    params: GetAppointmentsMetricDto,
-  ): Promise<Record<string, Record<number, number>>> {
-    const appointments = await this.db.appointment.findMany({
-      where: this.buildDateFilters(params),
-    });
-
-    const loadByWeekday = appointments.reduce<
-      Record<string, Record<number, number>>
-    >((acc, a) => {
-      const weekday = new Date(a.startTime).toLocaleDateString('en-US', {
-        weekday: 'long',
-      });
-      const hour = new Date(a.startTime).getHours();
-      if (!acc[weekday]) acc[weekday] = {};
-      acc[weekday][hour] = (acc[weekday][hour] || 0) + 1;
-      return acc;
-    }, {});
-
-    return loadByWeekday;
-  }
-
-  // 5. Процент записей по статусам
-  async getStatusPercentage(
-    params: GetAppointmentsMetricDto,
-  ): Promise<{ status: AppointmentStatus; percentage: number }[]> {
-    const totalAppointments = await this.db.appointment.count({
-      where: this.buildDateFilters(params),
-    });
-
-    const countsByStatus = await Promise.all(
-      Object.values(AppointmentStatus).map(async (status) => ({
-        status,
-        count: await this.db.appointment.count({
-          where: {
-            ...this.buildDateFilters(params),
-            status,
-          },
-        }),
-      })),
-    );
-
-    return countsByStatus.map(({ status, count }) => ({
-      status,
-      percentage: totalAppointments > 0 ? (count / totalAppointments) * 100 : 0,
-    }));
-  }
-
   // 4. Выручка по дням или неделям
   async getRevenueOverTime(
     params: GetAppointmentsMetricDto,
@@ -586,35 +490,6 @@ export class MetricsService {
     return Object.entries(revenueByPeriod).map(([period, revenue]) => ({
       period,
       revenue,
-    }));
-  }
-
-  // 3. Динамика количества записей
-  async getAppointmentTrends(
-    params: GetAppointmentsMetricDto,
-    interval: 'day' | 'week' = 'day',
-  ): Promise<{ period: string; count: number }[]> {
-    const appointments = await this.db.appointment.findMany({
-      where: this.buildDateFilters(params),
-    });
-
-    const countsByPeriod = appointments.reduce<Record<string, number>>(
-      (acc, a) => {
-        const period = formatISO(
-          interval === 'day'
-            ? startOfDay(new Date(a.startTime))
-            : startOfWeek(new Date(a.startTime)),
-          { representation: 'date' },
-        );
-        acc[period] = (acc[period] || 0) + 1;
-        return acc;
-      },
-      {},
-    );
-
-    return Object.entries(countsByPeriod).map(([period, count]) => ({
-      period,
-      count,
     }));
   }
 }

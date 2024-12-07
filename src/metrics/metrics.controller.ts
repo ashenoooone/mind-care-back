@@ -77,37 +77,11 @@ export class MetricsController {
     return this.metricsService.getTopCancellingClients(params);
   }
 
-  @Get('/average-cost-over-time')
-  getAverageCostByTime(
-    @Query() params: GetMetricDto,
-    @Query('interval') interval: 'day' | 'week' = 'week',
-  ) {
-    return this.metricsService.getAverageCostByTime(params, interval);
-  }
-
-  @Get('/load-by-weekday')
-  getLoadByWeekday(@Query() params: GetMetricDto) {
-    return this.metricsService.getLoadByWeekday(params);
-  }
-
-  @Get('/status-percentage')
-  getStatusPercentage(@Query() params: GetMetricDto) {
-    return this.metricsService.getStatusPercentage(params);
-  }
-
   @Get('/revenue-over-time')
   getRevenueOverTime(
     @Query() params: GetMetricDto,
     @Query('interval') interval: 'day' | 'week' = 'week',
   ) {
     return this.metricsService.getRevenueOverTime(params, interval);
-  }
-
-  @Get('/appointment-trends')
-  getAppointmentTrends(
-    @Query() params: GetMetricDto,
-    @Query('interval') interval: 'day' | 'week' = 'day',
-  ) {
-    return this.metricsService.getAppointmentTrends(params, interval);
   }
 }

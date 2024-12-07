@@ -1,38 +1,41 @@
 import { PrismaClient, SupportStatus } from '@prisma/client';
+import { faker } from '@faker-js/faker';
 
 export async function createSupportRequests(prisma: PrismaClient) {
   const existingRequests = await prisma.supportRequest.findMany();
+
   if (existingRequests.length === 0) {
     console.log('Создаем запросы в поддержку, так как их пока нет...');
 
-    const user = await prisma.user.findFirst();
-    if (!user) {
+    const users = await prisma.user.findMany();
+
+    if (users.length === 0) {
       console.error(
-        'Пользователь не найден. Пожалуйста, создайте пользователя перед запуском этого скрипта.',
+        'Пользователи не найдены. Пожалуйста, создайте пользователей перед запуском этого скрипта.',
       );
       return;
     }
 
-    await prisma.supportRequest.createMany({
-      data: [
-        {
-          clientId: user.id,
-          description:
-            'Проблема с записью на консультацию. Время не совпадает с выбранным.',
-          status: SupportStatus.PENDING,
-        },
-        {
-          clientId: user.id,
-          description:
-            'Не удается войти в систему через Telegram. Требуется помощь.',
-          status: SupportStatus.IN_PROGRESS,
-        },
-        {
-          clientId: user.id,
-          description: 'Запрос на изменение времени консультации.',
-          status: SupportStatus.RESOLVED,
-        },
-      ],
+    const supportRequests = Array.from({ length: 100 }, () => {
+      const randomUser = faker.helpers.arrayElement(users);
+
+      return {
+        clientId: randomUser.id,
+        description: faker.lorem.sentence(),
+        status: faker.helpers.arrayElement([
+          SupportStatus.PENDING,
+          SupportStatus.IN_PROGRESS,
+          SupportStatus.RESOLVED,
+        ]),
+      };
     });
+
+    await prisma.supportRequest.createMany({
+      data: supportRequests,
+    });
+
+    console.log('100 support requests created successfully');
+  } else {
+    console.log('Support requests already exist');
   }
 }
