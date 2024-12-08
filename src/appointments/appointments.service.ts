@@ -24,7 +24,18 @@ export class AppointmentsService {
 
   async create(createAppointmentDto: CreateAppointmentDto) {
     const { clientId, serviceId, date } = createAppointmentDto;
-
+    const client = await this.prisma.user.findFirst({
+      where: {
+        OR: [
+          {
+            id: clientId,
+          },
+          {
+            telegramId: clientId,
+          },
+        ],
+      },
+    });
     const lastAppointmentInDay = await this.prisma.appointment.findMany({
       where: {
         startTime: {
@@ -51,7 +62,6 @@ export class AppointmentsService {
     }
 
     let appointment;
-    console.log(getDay(date));
     const daySchedule = await this.dayScheduleService.getDayIfWorkDay(
       getDay(date),
     );
@@ -70,7 +80,7 @@ export class AppointmentsService {
       appointment = await this.prisma.appointment.create({
         data: {
           status: AppointmentStatus.SCHEDULED,
-          clientId,
+          clientId: client.id,
           serviceId,
           startTime,
           endTime,
@@ -85,7 +95,7 @@ export class AppointmentsService {
       appointment = await this.prisma.appointment.create({
         data: {
           status: AppointmentStatus.SCHEDULED,
-          clientId,
+          clientId: client.id,
           serviceId,
           startTime,
           endTime,
@@ -110,11 +120,19 @@ export class AppointmentsService {
 
     const parsedLimit = Number(limit);
     const parsedPage = Number(page);
-
     const filters: Prisma.AppointmentWhereInput = {};
 
     if (clientId) {
-      filters.clientId = clientId;
+      filters.OR = [
+        {
+          clientId: clientId,
+        },
+        {
+          client: {
+            telegramId: clientId,
+          },
+        },
+      ];
     }
 
     if (serviceId) {

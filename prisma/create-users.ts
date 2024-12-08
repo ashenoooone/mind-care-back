@@ -11,8 +11,8 @@ export async function createUsers(prisma: PrismaClient) {
     const fixedUsers = [
       {
         name: 'Roman',
-        telegramId: 1,
-        timezone: 1,
+        telegramId: 943091362,
+        timezone: 943091362,
         tgNickname: 'ashenoooone',
         phoneNumber: '79018072197',
         id: 1,

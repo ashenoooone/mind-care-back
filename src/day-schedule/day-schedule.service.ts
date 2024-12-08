@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateDayScheduleDto } from './dto/create-day-schedule.dto';
 import { UpdateDayScheduleDto } from './dto/update-day-schedule.dto';
 import { DatabaseService } from 'src/database/database.service';
@@ -7,13 +7,41 @@ import {
   addHours,
   addMinutes,
   eachDayOfInterval,
+  endOfDay,
   isEqual,
   startOfDay,
 } from 'date-fns';
+import { getDay } from 'src/common/lib/get-day';
+import { AppointmentStatus } from '@prisma/client';
 
 @Injectable()
 export class DayScheduleService {
   constructor(private readonly db: DatabaseService) {}
+
+  async getDaySchedule(day: Date) {
+    const dayIfWorkDay = await this.getDayIfWorkDay(getDay(day));
+    if (!dayIfWorkDay) throw new BadRequestException();
+    const appointmentsInDay = await this.db.appointment.findMany({
+      where: {
+        startTime: {
+          gte: startOfDay(day),
+          lt: endOfDay(day),
+        },
+        status: {
+          not: AppointmentStatus.CANCELLED,
+        },
+      },
+      orderBy: {
+        endTime: 'desc',
+      },
+    });
+
+    if (!appointmentsInDay.length) {
+      return addHours(new Date(day), dayIfWorkDay.startHour);
+    }
+    const latestAppointment = appointmentsInDay[0];
+    return addMinutes(latestAppointment.endTime, 10);
+  }
 
   async getDayIfWorkDay(day: number) {
     return this.db.workingSchedule.findFirst({
@@ -109,7 +137,6 @@ export class DayScheduleService {
     const workingDaysMap = new Map(
       workingDays.map((wd) => [wd.dayOfWeek + 1, wd]),
     );
-
     const availableDays = daysWithoutHolidays.filter((day) => {
       const workingDay = workingDaysMap.get(day.getDay());
 
@@ -126,13 +153,6 @@ export class DayScheduleService {
 
       const endOfDay = addHours(startOfDay(day), workingDay.endHour);
       const serviceDuration = service?.duration || 0;
-      console.log(
-        day,
-        endOfDay,
-        serviceDuration,
-        latestAppointment.endTime,
-        endOfDay > addMinutes(latestAppointment.endTime, serviceDuration),
-      );
 
       return endOfDay > addMinutes(latestAppointment.endTime, serviceDuration);
     });

@@ -3,22 +3,23 @@ import { CreateReportDto } from './dto/create-report.dto';
 import { UpdateReportDto } from './dto/update-report.dto';
 import { DatabaseService } from 'src/database/database.service';
 import { GetReportsDto } from './dto/get-reports.dto';
+import { SupportStatus } from '@prisma/client';
 
 @Injectable()
 export class ReportsService {
   constructor(private db: DatabaseService) {}
 
   async create(createReportDto: CreateReportDto) {
-    const client = await this.db.user.findUnique({
+    const client = await this.db.user.findFirst({
       where: {
-        telegramId: createReportDto.telegramId,
+        phoneNumber: createReportDto.phone,
       },
     });
 
     return this.db.supportRequest.create({
       data: {
-        description: createReportDto.description,
-        status: createReportDto.status,
+        description: createReportDto.text,
+        status: SupportStatus.PENDING,
         clientId: client.id,
       },
     });
@@ -34,6 +35,9 @@ export class ReportsService {
       skip: Number(params.limit) * currentPage,
       include: {
         client: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
       },
     });
 

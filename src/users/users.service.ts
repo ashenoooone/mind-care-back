@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user-dto';
@@ -10,7 +10,12 @@ export class UsersService {
   constructor(private db: DatabaseService) {}
 
   create(createUserDto: CreateUserDto) {
-    return this.db.user.create({ data: createUserDto });
+    return this.db.user.create({
+      data: {
+        ...createUserDto,
+        id: createUserDto.telegramId,
+      },
+    });
   }
 
   async findAll(params: GetUsersDto) {
@@ -51,14 +56,20 @@ export class UsersService {
   }
 
   async findOne(id: number) {
-    const userByIdFromDb = await this.db.user.findUnique({ where: { id } });
-    if (userByIdFromDb) return userByIdFromDb;
-    const userByIdFromTg = await this.db.user.findUnique({
+    const user = await this.db.user.findFirst({
       where: {
-        telegramId: id,
+        OR: [
+          {
+            id: +id,
+          },
+          {
+            telegramId: +id,
+          },
+        ],
       },
     });
-    return userByIdFromTg;
+    if (!user) throw new NotFoundException();
+    return user;
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {

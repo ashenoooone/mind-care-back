@@ -40,6 +40,11 @@ export class DayScheduleController {
     return this.dayScheduleService.remove(+id);
   }
 
+  @Get('day/:day')
+  getDaySchedule(@Param('day') day: string) {
+    return this.dayScheduleService.getDaySchedule(new Date(day));
+  }
+
   @Get('days')
   getAvailableDays(@Query() params: GetAvailableDays) {
     return this.dayScheduleService.getAvailableDays(params);
