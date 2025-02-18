@@ -13,6 +13,7 @@ import { addHours, addMinutes, endOfDay, isAfter, startOfDay } from 'date-fns';
 import { DayScheduleService } from 'src/day-schedule/day-schedule.service';
 import { NotWorkingDaysService } from 'src/not-working-days/not-working-days.service';
 import { getDay } from 'src/common/lib/get-day';
+import { GetCalendarDto } from './dto/get-calendar';
 
 @Injectable()
 export class AppointmentsService {
@@ -124,14 +125,8 @@ export class AppointmentsService {
 
     if (clientId) {
       filters.OR = [
-        {
-          clientId: clientId,
-        },
-        {
-          client: {
-            telegramId: clientId,
-          },
-        },
+        { clientId: clientId },
+        { client: { telegramId: clientId } },
       ];
     }
 
@@ -241,5 +236,44 @@ export class AppointmentsService {
     return await this.prisma.appointment.delete({
       where: { id },
     });
+  }
+
+  async getCalendar(params: GetCalendarDto) {
+    const dateFrom = new Date(params.dateFrom);
+    const dateTo = new Date(params.dateTo);
+
+    if (isAfter(dateFrom, dateTo)) {
+      throw new BadRequestException('Date from cannot be after date to');
+    }
+
+    const appointments = await this.prisma.appointment.findMany({
+      where: {
+        startTime: {
+          gte: startOfDay(dateFrom),
+          lte: endOfDay(dateTo),
+        },
+        status: {
+          not: AppointmentStatus.CANCELLED,
+        },
+      },
+      include: {
+        client: true,
+        service: true,
+      },
+      orderBy: {
+        startTime: 'asc',
+      },
+    });
+
+    const appointmentsByDay = appointments.reduce((acc, appointment) => {
+      const day = startOfDay(appointment.startTime).toISOString();
+      if (!acc[day]) {
+        acc[day] = [];
+      }
+      acc[day].push(appointment);
+      return acc;
+    }, {});
+
+    return appointmentsByDay;
   }
 }

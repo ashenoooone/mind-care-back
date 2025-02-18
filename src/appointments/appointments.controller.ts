@@ -12,6 +12,7 @@ import { AppointmentsService } from './appointments.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { GetAppointmentsDto } from './dto/get-appointments.dto';
+import { GetCalendarDto } from './dto/get-calendar';
 
 @Controller('appointments')
 export class AppointmentsController {
@@ -25,6 +26,11 @@ export class AppointmentsController {
   @Get()
   findAll(@Query() params: GetAppointmentsDto) {
     return this.appointmentsService.findAll(params);
+  }
+
+  @Get('calendar')
+  getCalendar(@Query() params: GetCalendarDto) {
+    return this.appointmentsService.getCalendar(params);
   }
 
   @Get(':id')

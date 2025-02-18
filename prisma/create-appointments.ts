@@ -1,11 +1,17 @@
 import { AppointmentStatus, Prisma, PrismaClient } from '@prisma/client';
-import { addDays, setHours, setMinutes, addMinutes } from 'date-fns';
+import {
+  addDays,
+  setHours,
+  setMinutes,
+  addMinutes,
+  startOfWeek,
+} from 'date-fns';
 
 export async function createAppointments(prisma: PrismaClient) {
   const existingAppointments = await prisma.appointment.findMany();
 
   if (existingAppointments.length === 0) {
-    console.log('Создаем 1000 записей на консультацию, так как их пока нет...');
+    console.log('Создаем записи на консультацию на текущую неделю...');
 
     const users = await prisma.user.findMany();
     const services = await prisma.service.findMany();
@@ -18,7 +24,8 @@ export async function createAppointments(prisma: PrismaClient) {
     }
 
     const appointments: Prisma.AppointmentCreateManyInput[] = [];
-    const daysInMonth = 30;
+    const startDate = startOfWeek(new Date(), { weekStartsOn: 1 }); // Начало текущей недели (понедельник)
+    const daysInPeriod = 5; // Понедельник - Пятница
 
     // Возможные статусы
     const statuses = [
@@ -27,11 +34,11 @@ export async function createAppointments(prisma: PrismaClient) {
       AppointmentStatus.COMPLETED,
     ];
 
-    for (let day = 0; day < daysInMonth; day++) {
-      const dayDate = addDays(new Date(), day);
+    for (let day = 0; day < daysInPeriod; day++) {
+      const dayDate = addDays(startDate, day);
 
-      // Случайное количество записей для этого дня (от 1 до 6)
-      const dailyAppointmentsCount = Math.floor(Math.random() * 6) + 1;
+      // Случайное количество записей для этого дня (от 3 до 8)
+      const dailyAppointmentsCount = Math.floor(Math.random() * 6) + 3;
 
       let currentStartTime = setHours(setMinutes(dayDate, 0), 9); // Начало рабочего дня: 09:00
 
@@ -53,8 +60,8 @@ export async function createAppointments(prisma: PrismaClient) {
           status: statuses[Math.floor(Math.random() * statuses.length)], // Случайный статус
         });
 
-        // Следующая запись начинается сразу после завершения текущей
-        currentStartTime = endTime;
+        // Следующая запись начинается через 15 минут после завершения текущей
+        currentStartTime = addMinutes(endTime, 15);
       }
     }
 
@@ -63,7 +70,7 @@ export async function createAppointments(prisma: PrismaClient) {
         data: appointments,
       });
       console.log(
-        `${appointments.length} записей успешно созданы в течение ${daysInMonth} дней.`,
+        `${appointments.length} записей успешно созданы на текущую рабочую неделю.`,
       );
     } catch (error) {
       console.error('Ошибка при создании записей:', error);
