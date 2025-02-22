@@ -55,8 +55,21 @@ export class UsersService {
     };
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, extended: boolean) {
     const user = await this.db.user.findFirst({
+      include: extended
+        ? {
+            appointments: {
+              take: 10,
+              orderBy: {
+                startTime: 'desc',
+              },
+              include: {
+                service: true,
+              },
+            },
+          }
+        : undefined,
       where: {
         OR: [
           {

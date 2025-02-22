@@ -207,7 +207,7 @@ export class AppointmentsService {
   }
 
   async update(id: number, updateAppointmentDto: UpdateAppointmentDto) {
-    const { clientId, serviceId, startTime, endTime, status } =
+    const { clientId, serviceId, startTime, endTime, status, note } =
       updateAppointmentDto;
 
     const updatedAppointment = await this.prisma.appointment.update({
@@ -218,6 +218,7 @@ export class AppointmentsService {
         startTime: startTime ? new Date(startTime) : undefined,
         endTime: endTime ? new Date(endTime) : undefined,
         status,
+        note,
       },
     });
 

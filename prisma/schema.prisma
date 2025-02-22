@@ -23,6 +23,7 @@ model User {
   phoneNumber    String?          @unique
   appointments   Appointment[]
   SupportRequest SupportRequest[]
+  AiHint         AiHint[]
 }
 
 model Service {
@@ -44,8 +45,18 @@ model Appointment {
   endTime   DateTime
   note      String?
   status    AppointmentStatus
-  createdAt DateTime          @default(now())
-  updatedAt DateTime          @updatedAt
+  aiHints   String?
+  AiHint    AiHint[]
+}
+
+model AiHint {
+  id            Int         @id @default(autoincrement())
+  hint          String
+  appointmentId Int
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
+  clientId      Int
+  client        User        @relation(fields: [clientId], references: [id])
+  createdAt     DateTime    @default(now())
 }
 
 model SupportRequest {
