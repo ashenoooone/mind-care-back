@@ -11,6 +11,8 @@ import { DayScheduleModule } from './day-schedule/day-schedule.module';
 import { AppointmentsModule } from './appointments/appointments.module';
 import { MetricsModule } from './metrics/metrics.module';
 import { NotWorkingDaysModule } from './not-working-days/not-working-days.module';
+import { HintsModule } from './hints/hints.module';
+import { PythonApiModule } from './python-api/python-api.module';
 
 @Module({
   imports: [
@@ -34,6 +36,8 @@ import { NotWorkingDaysModule } from './not-working-days/not-working-days.module
     AppointmentsModule,
     MetricsModule,
     NotWorkingDaysModule,
+    HintsModule,
+    PythonApiModule,
   ],
   controllers: [],
   providers: [],
