@@ -9,7 +9,14 @@ import { DatabaseService } from 'src/database/database.service';
 import { GetAppointmentsDto, SortDirection } from './dto/get-appointments.dto';
 import { PaginationMeta } from 'src/common/classes/pagination';
 import { AppointmentStatus, Prisma } from '@prisma/client';
-import { addHours, addMinutes, endOfDay, isAfter, startOfDay } from 'date-fns';
+import {
+  addDays,
+  addHours,
+  addMinutes,
+  endOfDay,
+  isAfter,
+  startOfDay,
+} from 'date-fns';
 import { DayScheduleService } from 'src/day-schedule/day-schedule.service';
 import { NotWorkingDaysService } from 'src/not-working-days/not-working-days.service';
 import { getDay } from 'src/common/lib/get-day';
@@ -266,14 +273,20 @@ export class AppointmentsService {
       },
     });
 
-    const appointmentsByDay = appointments.reduce((acc, appointment) => {
-      const day = startOfDay(appointment.startTime).toISOString();
-      if (!acc[day]) {
-        acc[day] = [];
+    const appointmentsByDay = {};
+
+    let currentDate = startOfDay(dateFrom);
+    while (currentDate <= dateTo) {
+      if (currentDate.getDay() !== 0 && currentDate.getDay() !== 6) {
+        appointmentsByDay[currentDate.toISOString()] = [];
       }
-      acc[day].push(appointment);
-      return acc;
-    }, {});
+      currentDate = addDays(currentDate, 1);
+    }
+
+    appointments.forEach((appointment) => {
+      const day = startOfDay(appointment.startTime).toISOString();
+      appointmentsByDay[day].push(appointment);
+    });
 
     return appointmentsByDay;
   }
