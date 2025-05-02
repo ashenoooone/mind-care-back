@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DatabaseService } from 'src/database/database.service';
 import { LoginDto, LoginResponseDto } from './dto/login.dto';
@@ -28,7 +32,7 @@ export class OwnerService {
     const correct = params.login === login && params.password === password;
 
     if (!correct) {
-      throw new ForbiddenException();
+      throw new UnauthorizedException();
     }
     const token = randomUUID();
     const settings = await this.db.serverSettings.findFirst();
