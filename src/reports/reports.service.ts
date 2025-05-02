@@ -36,9 +36,14 @@ export class ReportsService {
       include: {
         client: true,
       },
-      orderBy: {
-        updatedAt: 'desc',
-      },
+      orderBy: [
+        {
+          createdAt: 'desc',
+        },
+        {
+          id: 'desc',
+        },
+      ],
     });
 
     const totalPages = Math.floor(totalItems / params.limit);
