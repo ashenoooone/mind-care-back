@@ -64,6 +64,7 @@ model SupportRequest {
   clientId    Int
   client      User          @relation(fields: [clientId], references: [id])
   createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
   description String
   status      SupportStatus @default(PENDING)
 }

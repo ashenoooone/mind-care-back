@@ -37,7 +37,7 @@ export class ReportsService {
         client: true,
       },
       orderBy: {
-        createdAt: 'desc',
+        updatedAt: 'desc',
       },
     });
 
