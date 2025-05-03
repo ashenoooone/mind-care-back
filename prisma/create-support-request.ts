@@ -1,5 +1,5 @@
 import { PrismaClient, SupportStatus } from '@prisma/client';
-import { faker } from '@faker-js/faker';
+import { faker } from '@faker-js/faker/locale/ru';
 
 export async function createSupportRequests(prisma: PrismaClient) {
   const existingRequests = await prisma.supportRequest.findMany();

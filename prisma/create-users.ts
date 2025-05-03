@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { faker } from '@faker-js/faker';
+import { faker } from '@faker-js/faker/locale/ru';
 export async function createUsers(prisma: PrismaClient) {
   const existingUsers = await prisma.user.findMany({
     where: {
