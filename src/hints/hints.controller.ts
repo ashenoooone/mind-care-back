@@ -6,7 +6,7 @@ import { GenerateHintsForUserDto } from './dto/generate-hints-for-user';
 export class HintsController {
   constructor(private readonly hintsService: HintsService) {}
 
-  @Post('generate-hints-for-user')
+  @Post()
   generateHints(@Body() generateHintsForUserDto: GenerateHintsForUserDto) {
     return this.hintsService.generateHints(generateHintsForUserDto);
   }
