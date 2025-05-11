@@ -58,7 +58,10 @@ export class ServicesService {
         id: Number(id),
       },
       data: {
-        ...updateServiceDto,
+        description: updateServiceDto.description,
+        duration: updateServiceDto.duration,
+        name: updateServiceDto.name,
+        price: updateServiceDto.price,
       },
     });
   }
