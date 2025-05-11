@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
-import { UUID } from 'crypto';
 
 export class LoginDto {
   @ApiProperty()
@@ -14,5 +13,5 @@ export class LoginDto {
 
 export class LoginResponseDto {
   @ApiProperty()
-  token: UUID;
+  token: string;
 }

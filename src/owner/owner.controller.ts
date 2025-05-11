@@ -8,7 +8,7 @@ export class OwnerController {
 
   @Get('checkToken')
   checkToken(@Headers('Authorization') authHeader: string) {
-    const token = authHeader;
+    const token = authHeader.split(' ')[1];
     return this.ownerService.checkToken(token);
   }
 

@@ -7,21 +7,29 @@ import { ConfigService } from '@nestjs/config';
 import { DatabaseService } from 'src/database/database.service';
 import { LoginDto, LoginResponseDto } from './dto/login.dto';
 import { parseAdminCredentials } from 'src/common/parse-admin-credentials';
-import { randomUUID } from 'crypto';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class OwnerService {
   constructor(
     private db: DatabaseService,
     private config: ConfigService,
+    private jwtService: JwtService,
   ) {}
 
   async checkToken(token: string) {
-    const settings = await this.db.serverSettings.findFirst();
+    try {
+      const payload = await this.jwtService.verifyAsync(token);
+      const settings = await this.db.serverSettings.findFirst();
 
-    if (settings.adminToken !== token) throw new ForbiddenException();
+      if (settings.adminToken !== token) {
+        throw new ForbiddenException();
+      }
 
-    return 'ok';
+      return payload;
+    } catch {
+      throw new ForbiddenException();
+    }
   }
 
   async login(params: LoginDto): Promise<LoginResponseDto> {
@@ -34,7 +42,12 @@ export class OwnerService {
     if (!correct) {
       throw new UnauthorizedException();
     }
-    const token = randomUUID();
+
+    const token = await this.jwtService.signAsync(
+      { sub: 'admin', username: login },
+      { secret: this.config.get('JWT_SECRET') },
+    );
+
     const settings = await this.db.serverSettings.findFirst();
     await this.db.serverSettings.update({
       where: { id: settings.id },

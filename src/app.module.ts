@@ -13,6 +13,7 @@ import { MetricsModule } from './metrics/metrics.module';
 import { NotWorkingDaysModule } from './not-working-days/not-working-days.module';
 import { HintsModule } from './hints/hints.module';
 import { PythonApiModule } from './python-api/python-api.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { PythonApiModule } from './python-api/python-api.module';
         PORT: Joi.number().port().default(80),
         DATABASE_URL: Joi.string(),
         ADMIN_CREDENTIALS: Joi.string().default('root:root'),
+        JWT_SECRET: Joi.string().default('your-secret-key'),
       }),
     }),
     UsersModule,
@@ -38,6 +40,7 @@ import { PythonApiModule } from './python-api/python-api.module';
     NotWorkingDaysModule,
     HintsModule,
     PythonApiModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],
