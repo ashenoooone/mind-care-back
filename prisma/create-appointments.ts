@@ -5,6 +5,7 @@ import {
   setMinutes,
   addMinutes,
   startOfWeek,
+  isWithinInterval,
 } from 'date-fns';
 
 export async function createAppointments(prisma: PrismaClient) {
@@ -138,9 +139,11 @@ export async function createAppointments(prisma: PrismaClient) {
       'Важно понимать, что У него учащается когда дыхание, этот человек думает о завтрашнем дне.',
     ];
 
+    // Создаем массив для хранения занятых временных слотов
+    const bookedSlots: { startTime: Date; endTime: Date }[] = [];
+
     for (const user of users) {
       const userAppointmentsCount = Math.floor(Math.random() * 3) + 1;
-
       const userDays = Array.from({ length: daysInPeriod }, (_, i) => i)
         .sort(() => Math.random() - 0.5)
         .slice(0, userAppointmentsCount);
@@ -152,23 +155,61 @@ export async function createAppointments(prisma: PrismaClient) {
         const randomNote =
           possibleNotes[Math.floor(Math.random() * possibleNotes.length)];
 
-        const randomHour = Math.floor(Math.random() * 9) + 9;
-        const randomMinute = Math.floor(Math.random() * 4) * 15;
-        const startTime = setMinutes(
-          setHours(dayDate, randomHour),
-          randomMinute,
-        );
+        // Генерируем все возможные временные слоты для дня
+        const availableSlots: Date[] = [];
+        for (let hour = 9; hour < 18; hour++) {
+          for (let minute = 0; minute < 60; minute += 15) {
+            availableSlots.push(setMinutes(setHours(dayDate, hour), minute));
+          }
+        }
 
-        const endTime = addMinutes(startTime, randomService.duration || 30);
+        // Ищем свободный слот
+        let startTime: Date | null = null;
+        let endTime: Date | null = null;
 
-        appointments.push({
-          clientId: user.id,
-          serviceId: randomService.id,
-          startTime,
-          endTime,
-          status: statuses[Math.floor(Math.random() * statuses.length)],
-          note: `**${randomNote}**`,
-        });
+        for (const slot of availableSlots) {
+          const potentialEndTime = addMinutes(
+            slot,
+            randomService.duration || 30,
+          );
+
+          // Проверяем, не пересекается ли с существующими записями
+          const hasOverlap = bookedSlots.some(
+            (bookedSlot) =>
+              isWithinInterval(slot, {
+                start: bookedSlot.startTime,
+                end: bookedSlot.endTime,
+              }) ||
+              isWithinInterval(potentialEndTime, {
+                start: bookedSlot.startTime,
+                end: bookedSlot.endTime,
+              }) ||
+              isWithinInterval(bookedSlot.startTime, {
+                start: slot,
+                end: potentialEndTime,
+              }),
+          );
+
+          if (!hasOverlap) {
+            startTime = slot;
+            endTime = potentialEndTime;
+            break;
+          }
+        }
+
+        if (startTime && endTime) {
+          // Добавляем новый слот в список занятых
+          bookedSlots.push({ startTime, endTime });
+
+          appointments.push({
+            clientId: user.id,
+            serviceId: randomService.id,
+            startTime,
+            endTime,
+            status: statuses[Math.floor(Math.random() * statuses.length)],
+            note: `**${randomNote}**`,
+          });
+        }
       }
     }
 
