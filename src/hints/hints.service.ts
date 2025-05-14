@@ -16,7 +16,6 @@ export class HintsService {
       where: {
         clientId: userId,
       },
-      // TODO: add to dto in future if need
       take: 5,
     });
 
