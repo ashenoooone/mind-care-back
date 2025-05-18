@@ -21,6 +21,7 @@ import { DayScheduleService } from 'src/day-schedule/day-schedule.service';
 import { NotWorkingDaysService } from 'src/not-working-days/not-working-days.service';
 import { getDay } from 'src/common/lib/get-day';
 import { GetCalendarDto } from './dto/get-calendar';
+import { CreateAdminAppointmentDto } from './dto/create-admin-appointment.dto';
 
 @Injectable()
 export class AppointmentsService {
@@ -29,6 +30,71 @@ export class AppointmentsService {
     private readonly dayScheduleService: DayScheduleService,
     private readonly nonWorkingService: NotWorkingDaysService,
   ) {}
+
+  async createAdminAppointment(
+    createAppointmentDto: CreateAdminAppointmentDto,
+  ) {
+    const {
+      clientId,
+      serviceId,
+      startTime,
+      endTime,
+      status = AppointmentStatus.SCHEDULED,
+    } = createAppointmentDto;
+    const client = await this.prisma.user.findFirst({
+      where: {
+        OR: [
+          {
+            id: clientId,
+          },
+          {
+            telegramId: clientId,
+          },
+        ],
+      },
+    });
+
+    if (!client) {
+      throw new NotFoundException('no such client');
+    }
+
+    const service = await this.prisma.service.findUnique({
+      where: {
+        id: serviceId,
+      },
+    });
+
+    if (!service) {
+      throw new NotFoundException('no such service');
+    }
+
+    const daySchedule = await this.dayScheduleService.getDayIfWorkDay(
+      getDay(startTime),
+    );
+
+    if (!daySchedule) {
+      throw new BadRequestException('no such day');
+    }
+
+    const nonWorkingDay = await this.nonWorkingService.findByDate(startTime);
+    if (nonWorkingDay) throw new BadRequestException('non working day');
+
+    if (isAfter(endTime, addHours(startTime, daySchedule.endHour))) {
+      throw new BadRequestException('end of day');
+    }
+
+    const appointment = await this.prisma.appointment.create({
+      data: {
+        clientId: client.id,
+        serviceId,
+        startTime,
+        endTime,
+        status,
+      },
+    });
+
+    return appointment;
+  }
 
   async create(createAppointmentDto: CreateAppointmentDto) {
     const { clientId, serviceId, date } = createAppointmentDto;
