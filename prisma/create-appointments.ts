@@ -139,11 +139,62 @@ export async function createAppointments(prisma: PrismaClient) {
       'Важно понимать, что У него учащается когда дыхание, этот человек думает о завтрашнем дне.',
     ];
 
-    // Создаем массив для хранения занятых временных слотов
-    const bookedSlots: { startTime: Date; endTime: Date }[] = [];
+    // Создаем массив для хранения занятых временных слотов по дням
+    const bookedSlotsByDay: Map<number, { startTime: Date; endTime: Date }[]> =
+      new Map();
 
+    // Инициализируем массивы для каждого дня
+    for (let day = 0; day < daysInPeriod; day++) {
+      bookedSlotsByDay.set(day, []);
+    }
+
+    // Сначала создаем по одной пересекающейся паре для каждого дня
+    for (let day = 0; day < daysInPeriod; day++) {
+      const dayDate = addDays(startDate, day);
+      const firstSlot = setMinutes(setHours(dayDate, 10), 0); // 10:00
+      const secondSlot = setMinutes(setHours(dayDate, 10), 45); // 10:45
+
+      const firstEndTime = addMinutes(firstSlot, 60); // Час длительности
+      const secondEndTime = addMinutes(secondSlot, 60);
+
+      // Создаем две пересекающиеся записи
+      const randomService =
+        services[Math.floor(Math.random() * services.length)];
+      const randomNote =
+        possibleNotes[Math.floor(Math.random() * possibleNotes.length)];
+      const randomUser = users[Math.floor(Math.random() * users.length)];
+      const anotherUser =
+        users.find((u) => u.id !== randomUser.id) || randomUser;
+
+      appointments.push({
+        clientId: randomUser.id,
+        serviceId: randomService.id,
+        startTime: firstSlot,
+        endTime: firstEndTime,
+        status: statuses[Math.floor(Math.random() * statuses.length)],
+        note: `**${randomNote}**`,
+      });
+
+      appointments.push({
+        clientId: anotherUser.id,
+        serviceId: randomService.id,
+        startTime: secondSlot,
+        endTime: secondEndTime,
+        status: statuses[Math.floor(Math.random() * statuses.length)],
+        note: `**${randomNote}**`,
+      });
+
+      bookedSlotsByDay
+        .get(day)
+        ?.push(
+          { startTime: firstSlot, endTime: firstEndTime },
+          { startTime: secondSlot, endTime: secondEndTime },
+        );
+    }
+
+    // Теперь добавляем остальные записи без пересечений
     for (const user of users) {
-      const userAppointmentsCount = Math.floor(Math.random() * 3) + 1;
+      const userAppointmentsCount = Math.floor(Math.random() * 2) + 1; // Уменьшили максимальное количество записей
       const userDays = Array.from({ length: daysInPeriod }, (_, i) => i)
         .sort(() => Math.random() - 0.5)
         .slice(0, userAppointmentsCount);
@@ -174,7 +225,7 @@ export async function createAppointments(prisma: PrismaClient) {
           );
 
           // Проверяем, не пересекается ли с существующими записями
-          const hasOverlap = bookedSlots.some(
+          const hasOverlap = bookedSlotsByDay.get(day)?.some(
             (bookedSlot) =>
               isWithinInterval(slot, {
                 start: bookedSlot.startTime,
@@ -199,7 +250,7 @@ export async function createAppointments(prisma: PrismaClient) {
 
         if (startTime && endTime) {
           // Добавляем новый слот в список занятых
-          bookedSlots.push({ startTime, endTime });
+          bookedSlotsByDay.get(day)?.push({ startTime, endTime });
 
           appointments.push({
             clientId: user.id,
