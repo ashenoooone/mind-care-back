@@ -351,6 +351,10 @@ export class AppointmentsService {
 
     appointments.forEach((appointment) => {
       const day = startOfDay(appointment.startTime).toISOString();
+      if (!appointmentsByDay[day]) {
+        // TODO: тут проверка это фикс последствий, по сути надо фиксить чтобы нельзя было записаться в день которого нет
+        appointmentsByDay[day] = [];
+      }
       appointmentsByDay[day].push(appointment);
     });
 
